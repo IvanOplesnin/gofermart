@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - engine: "postgresql"
+    queries: 
+      - internal/repository/psql/queries
+    schema: 
+      - migrations/schema/00001_init_table_in_database.sql
+
+    gen:
+      go:
+        package: query
+        out: internal/repository/psql/query
+        sql_package: pgx/v5
+
