@@ -26,3 +26,17 @@ func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (int32, error)
 	err := row.Scan(&id)
 	return id, err
 }
+
+const getUserByLogin = `-- name: GetUserByLogin :one
+SELECT id, "login", password_hash
+FROM users
+WHERE "login" = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserByLogin(ctx context.Context, login string) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByLogin, login)
+	var i User
+	err := row.Scan(&i.ID, &i.Login, &i.PasswordHash)
+	return i, err
+}

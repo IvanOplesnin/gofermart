@@ -27,12 +27,12 @@ func main() {
 	repo := psql.NewRepo(db)
 	hasher := hasher.NewSHA256()
 
-	svc := gophermart.New(cfg, hasher, repo)
+	svc := gophermart.New(cfg, hasher, repo, repo)
 	if svc == nil {
 		logger.Log.Fatal("service init error")
 	}
 
-	mux := handler.InitHandler(svc)
+	mux := handler.InitHandler(svc, svc)
 	logger.Log.Infof("Listen on %s", cfg.RunAddress)
 
 	if err := http.ListenAndServe(cfg.RunAddress, mux); err != nil {

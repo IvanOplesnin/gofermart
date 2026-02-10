@@ -14,11 +14,12 @@ const (
 	tokenCookieName      = "token"
 )
 
-func InitHandler(reg Registrar) *chi.Mux {
+func InitHandler(reg Registrar, auther Auther) *chi.Mux {
 	router := chi.NewRouter()
 	router.Use(mw.WithLogging)
 
 	router.Post("/api/user/register", Register(reg))
+	router.Post("/api/user/login", Login(auther))
 
 	return router
 }

@@ -7,6 +7,7 @@ import (
 
 	"github.com/IvanOplesnin/gofermart.git/internal/repository/psql/query"
 	"github.com/IvanOplesnin/gofermart.git/internal/service/gophermart"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -39,4 +40,20 @@ func (r *Repo) AddUser(ctx context.Context, login string, passwordHash string) (
 		return 0, gophermart.ErrUserAlreadyExists
 	}
 	return 0, fmt.Errorf("repo.AddUser error: %w", err)
+}
+
+
+func (r *Repo) GetUser(ctx context.Context, login string) (gophermart.User, error) {
+	dbUser, err := r.queries.GetUserByLogin(ctx, login)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return gophermart.User{}, gophermart.ErrNoRow
+	}
+	if err != nil {
+		return gophermart.User{}, fmt.Errorf("repo.GetUser error: %w", err)
+	}
+	return gophermart.User{
+		ID:           uint64(dbUser.ID),
+		Login:        dbUser.Login,
+		HashPassword: dbUser.PasswordHash,
+	}, nil
 }
