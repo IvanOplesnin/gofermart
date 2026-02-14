@@ -7,7 +7,31 @@ package query
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
+
+const addOrder = `-- name: AddOrder :exec
+INSERT INTO order_numbers (user_id, "number", "status", uploaded_at)
+VALUES ($1, $2, $3, $4)
+`
+
+type AddOrderParams struct {
+	UserID     int32
+	Number     string
+	Status     string
+	UploadedAt pgtype.Timestamptz
+}
+
+func (q *Queries) AddOrder(ctx context.Context, arg AddOrderParams) error {
+	_, err := q.db.Exec(ctx, addOrder,
+		arg.UserID,
+		arg.Number,
+		arg.Status,
+		arg.UploadedAt,
+	)
+	return err
+}
 
 const addUser = `-- name: AddUser :one
 INSERT INTO users ("login", password_hash)
@@ -23,6 +47,47 @@ type AddUserParams struct {
 func (q *Queries) AddUser(ctx context.Context, arg AddUserParams) (int32, error) {
 	row := q.db.QueryRow(ctx, addUser, arg.Login, arg.PasswordHash)
 	var id int32
+	err := row.Scan(&id)
+	return id, err
+}
+
+const getOrderByNumber = `-- name: GetOrderByNumber :one
+SELECT id, user_id, "number", "status", uploaded_at
+FROM order_numbers
+WHERE "number" = $1
+LIMIT 1
+`
+
+type GetOrderByNumberRow struct {
+	ID         int32
+	UserID     int32
+	Number     string
+	Status     string
+	UploadedAt pgtype.Timestamptz
+}
+
+func (q *Queries) GetOrderByNumber(ctx context.Context, number string) (GetOrderByNumberRow, error) {
+	row := q.db.QueryRow(ctx, getOrderByNumber, number)
+	var i GetOrderByNumberRow
+	err := row.Scan(
+		&i.ID,
+		&i.UserID,
+		&i.Number,
+		&i.Status,
+		&i.UploadedAt,
+	)
+	return i, err
+}
+
+const getUserByID = `-- name: GetUserByID :one
+SELECT id
+FROM users
+WHERE id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserByID(ctx context.Context, id int32) (int32, error) {
+	row := q.db.QueryRow(ctx, getUserByID, id)
 	err := row.Scan(&id)
 	return id, err
 }

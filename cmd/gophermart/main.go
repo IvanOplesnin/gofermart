@@ -32,7 +32,7 @@ func main() {
 		logger.Log.Fatal("service init error")
 	}
 
-	mux := handler.InitHandler(svc, svc)
+	mux := handler.InitHandler(svc, svc, svc, svc)
 	logger.Log.Infof("Listen on %s", cfg.RunAddress)
 
 	if err := http.ListenAndServe(cfg.RunAddress, mux); err != nil {
