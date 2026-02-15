@@ -3,6 +3,7 @@ package gophermart
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 var (
@@ -30,9 +31,28 @@ type Hasher interface {
 }
 
 type GetApiOrdered interface {
-	GetOrder(ctx context.Context, number string) (status int, accrual float64, err error)
+	GetOrder(ctx context.Context, number string) (response *AccrualResponse, err error)
+}
+
+type AccrualResponse struct {
+	OrderNumber string  `json:"number"`
+	Status      string  `json:"status"`
+	Accrual     float64 `json:"accrual"`
 }
 
 type AddOrdered interface {
 	CreateOrder(ctx context.Context, userID uint64, number string) (created bool, ownerUserID uint64, err error)
+}
+
+type ListUpdateApplyAccrual interface {
+	ListPending(ctx context.Context, limit uint16, statuses []string, timeSync time.Time) ([]Order, error)
+	UpdateFromAccrual(ctx context.Context, number string, status string, nextSync time.Time) error
+	ApplyAccrual(ctx context.Context, number string, accrual int64, userID uint64) error
+}
+
+type Order struct {
+	UserID      uint64
+	Number      string
+	OrderStatus string
+	UploadedAt  time.Time
 }

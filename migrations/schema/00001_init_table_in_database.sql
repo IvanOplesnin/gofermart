@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS order_numbers (
     "status" VARCHAR(30) NOT NULL,
     accrual NUMERIC(12, 2),
     uploaded_at TIMESTAMPTZ NOT NULL,
+    next_sync_at TIMESTAMPTZ,
 
     CONSTRAINT order_status_chk CHECK("status" IN ('PROCESSING', 'PROCESSED', 'INVALID', 'NEW')),
 
@@ -23,6 +24,9 @@ CREATE TABLE IF NOT EXISTS order_numbers (
 );
 CREATE INDEX IF NOT EXISTS order_numbers_user_id_uploaded_at_idx ON order_numbers(user_id, uploaded_at);
 
+CREATE INDEX IF NOT EXISTS order_numbers_pending_next_sync_idx
+ON order_numbers (next_sync_at, uploaded_at)
+WHERE "status" IN ('NEW', 'PROCESSING');
 
 CREATE TABLE IF NOT EXISTS user_balance (
         id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
