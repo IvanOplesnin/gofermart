@@ -6,8 +6,9 @@ import (
 )
 
 const (
-	RunADDRESS_KEY = "RUN_ADDRESS"
-	DSN_KEY        = "DATABASE_URI"
+	RunADDRESS_KEY         = "RUN_ADDRESS"
+	DSN_KEY                = "DATABASE_URI"
+	ACCRUAL_SYSTEM_ADDRESS = "ACCRUAL_SYSTEM_ADDRESS"
 )
 
 type Logger struct {
@@ -22,15 +23,15 @@ func (l *Logger) String() string {
 
 type Config struct {
 	Logger
-	RunAddress string
-	Dsn        string
-	Secret     string
+	RunAddress            string
+	Dsn                   string
+	Secret                string
+	AccrualServiceAddress string
 }
 
 func (c *Config) String() string {
 	return "Logger: " + c.Logger.String() + "\n" +
-		"RunAddress: " + c.RunAddress + "\n" +
-		"Dsn: " + c.Dsn + "\n"
+		"RunAddress: " + c.RunAddress + "\n"
 }
 
 func InitConfig() *Config {
@@ -50,9 +51,11 @@ func InitConfig() *Config {
 	}
 
 	cfg.RunAddress = "http://localhost:8080/"
+	cfg.AccrualServiceAddress = "http://localhost:8081/"
 
 	flag.StringVar(&cfg.RunAddress, "a", cfg.RunAddress, runAddressFlagUsage)
 	flag.StringVar(&cfg.Dsn, "d", cfg.Dsn, DsnFlagUsage)
+	flag.StringVar(&cfg.AccrualServiceAddress, "r", cfg.AccrualServiceAddress, "Accrual service address")
 
 	flag.Parse()
 
@@ -68,6 +71,9 @@ func InitConfig() *Config {
 	}
 	if dsn, ok := os.LookupEnv(DSN_KEY); ok {
 		cfg.Dsn = dsn
+	}
+	if accrualServiceAddress, ok := os.LookupEnv(ACCRUAL_SYSTEM_ADDRESS); ok {
+		cfg.AccrualServiceAddress = accrualServiceAddress
 	}
 
 	return &cfg

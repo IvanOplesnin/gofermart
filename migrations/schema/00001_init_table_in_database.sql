@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS order_numbers (
     "number" VARCHAR(255) NOT NULL,
     user_id INTEGER NOT NULL,
     "status" VARCHAR(30) NOT NULL,
-    accrual NUMERIC(12, 2),
+    accrual INTEGER,
     uploaded_at TIMESTAMPTZ NOT NULL,
     next_sync_at TIMESTAMPTZ,
 
@@ -31,8 +31,8 @@ WHERE "status" IN ('NEW', 'PROCESSING');
 CREATE TABLE IF NOT EXISTS user_balance (
         id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
         user_id INTEGER NOT NULL,
-        balance NUMERIC(12,2) NOT NULL DEFAULT 0,
-        withdrawn NUMERIC(12,2) NOT NULL DEFAULT 0,
+        balance INTEGER NOT NULL DEFAULT 0,
+        withdrawn INTEGER NOT NULL DEFAULT 0,
 
         CHECK (balance >= 0 AND withdrawn >= 0),
         CONSTRAINT user_balance_user_uk UNIQUE (user_id),
@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS withdraws (
     id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
     user_id INTEGER NOT NULL,
     order_number VARCHAR(255) NOT NULL,
-    summa NUMERIC(12,2) NOT NULL,
+    summa INTEGER NOT NULL,
     processed_at TIMESTAMPTZ NOT NULL,
 
 

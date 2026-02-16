@@ -19,21 +19,61 @@ type Service struct {
 
 	userCRUD   UserCRUD
 	addOrdered AddOrdered
+
+	worker        *worker
+	workerDb      ListUpdateApplyAccrual
+	clientAccrual GetApiOrdered
 }
 
 var ErrNoRow = errors.New("no row")
 
-func New(cfg *config.Config, hasher Hasher, userCRUD UserCRUD, addOrdered AddOrdered) *Service {
-	if cfg == nil || hasher == nil || userCRUD == nil || addOrdered == nil {
-		return nil
+type ServiceDeps struct {
+	Hasher     Hasher
+	UserCRUD   UserCRUD
+	AddOrdered AddOrdered
+
+	WorkerDB      ListUpdateApplyAccrual
+	AccrualClient GetApiOrdered
+}
+
+func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("gophermart.New: cfg is nil")
+	}
+	if deps.Hasher == nil {
+		return nil, fmt.Errorf("gophermart.New: Hasher is nil")
+	}
+	if deps.UserCRUD == nil {
+		return nil, fmt.Errorf("gophermart.New: UserCRUD is nil")
+	}
+	if deps.AddOrdered == nil {
+		return nil, fmt.Errorf("gophermart.New: AddOrdered is nil")
+	}
+	if deps.WorkerDB == nil {
+		return nil, fmt.Errorf("gophermart.New: WorkerDB is nil")
+	}
+	if deps.AccrualClient == nil {
+		return nil, fmt.Errorf("gophermart.New: AccrualClient is nil")
 	}
 
-	return &Service{
-		hash:       hasher,
+	svc := &Service{
+		hash:       deps.Hasher,
 		secret:     []byte(cfg.Secret),
-		userCRUD:   userCRUD,
-		addOrdered: addOrdered,
+		userCRUD:   deps.UserCRUD,
+		addOrdered: deps.AddOrdered,
 	}
+
+	svc.worker = newWorker(deps.AccrualClient, deps.WorkerDB)
+
+	return svc, nil
+}
+
+func (s *Service) Start() {
+	s.worker.Run()
+}
+
+func (s *Service) Stop() {
+	s.worker.Stop()
 }
 
 func (s *Service) Register(ctx context.Context, login string, password string) (string, error) {

@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	accrualclient "github.com/IvanOplesnin/gofermart.git/internal/accrual_client"
 	"github.com/IvanOplesnin/gofermart.git/internal/config"
 	"github.com/IvanOplesnin/gofermart.git/internal/handler"
 	"github.com/IvanOplesnin/gofermart.git/internal/logger"
@@ -18,7 +19,7 @@ func main() {
 	if err := logger.SetupLogger(&cfg.Logger); err != nil {
 		log.Fatalf("error setupLogger: %s", err.Error())
 	}
-	
+
 	db, err := psql.Connect(cfg.Dsn)
 	if err != nil {
 		logger.Log.Fatalf("db connect error: %s", err.Error())
@@ -26,10 +27,17 @@ func main() {
 	}
 	repo := psql.NewRepo(db)
 	hasher := hasher.NewSHA256()
+	accrualClient := accrualclient.New(cfg.AccrualServiceAddress)
 
-	svc := gophermart.New(cfg, hasher, repo, repo)
-	if svc == nil {
-		logger.Log.Fatal("service init error")
+	svc, err := gophermart.New(cfg, gophermart.ServiceDeps{
+		Hasher:        hasher,
+		UserCRUD:      repo,
+		WorkerDB:      repo,
+		AddOrdered:    repo,
+		AccrualClient: accrualClient,
+	})
+	if err != nil {
+		logger.Log.Fatalf("svc create error: %s", err.Error())
 	}
 
 	mux := handler.InitHandler(svc, svc, svc, svc)
@@ -39,4 +47,3 @@ func main() {
 		logger.Log.Fatalf("error ListenAndServe: %s", err.Error())
 	}
 }
-

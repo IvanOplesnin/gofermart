@@ -13,8 +13,9 @@ type OrderNumber struct {
 	Number     string
 	UserID     int32
 	Status     string
-	Accrual    pgtype.Numeric
+	Accrual    pgtype.Int4
 	UploadedAt pgtype.Timestamptz
+	NextSyncAt pgtype.Timestamptz
 }
 
 type User struct {
@@ -26,14 +27,14 @@ type User struct {
 type UserBalance struct {
 	ID        int32
 	UserID    int32
-	Balance   pgtype.Numeric
-	Withdrawn pgtype.Numeric
+	Balance   int32
+	Withdrawn int32
 }
 
 type Withdraw struct {
 	ID          int32
 	UserID      int32
 	OrderNumber string
-	Summa       pgtype.Numeric
+	Summa       int32
 	ProcessedAt pgtype.Timestamptz
 }

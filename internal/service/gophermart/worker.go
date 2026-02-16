@@ -3,11 +3,14 @@ package gophermart
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
 
 	"github.com/IvanOplesnin/gofermart.git/internal/logger"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -95,6 +98,13 @@ func (w *worker) checkAndUpdate(ctx context.Context) {
 		logger.Log.Errorf("svc.worker.checkAndUpdate: %v", err.Error())
 		return
 	}
+	if len(orders) == 0 {
+		return
+	}
+	logger.Log.WithFields(logrus.Fields{
+		"count_orders": len(orders),
+		"orders":       fmt.Sprintf("%s", listOrdersString(orders)),
+	}).Infof("worker.checkAndUpdate run")
 	ctxBatch, cancel := context.WithCancel(ctx)
 	defer cancel()
 	once := sync.Once{}
@@ -128,7 +138,7 @@ Loop:
 			}
 			if responseAccrual.Status != o.OrderStatus {
 				if responseAccrual.Status == "PROCESSED" {
-					if err := w.checkerDb.ApplyAccrual(ctx, o.Number, int64(responseAccrual.Accrual), o.UserID); err != nil {
+					if err := w.checkerDb.ApplyAccrual(ctx, o.Number, int64(*responseAccrual.Accrual), o.UserID); err != nil {
 						logger.Log.Errorf("svc.worker.checkAndUpdate: %s", err.Error())
 						return
 					}
@@ -137,7 +147,7 @@ Loop:
 					return
 				}
 			} else {
-				if err := w.checkerDb.UpdateFromAccrual(ctx, o.Number, "", now.Add(time.Second*120)); err != nil {
+				if err := w.checkerDb.UpdateSyncTime(ctx, o.Number, now.Add(time.Second*120)); err != nil {
 					logger.Log.Errorf("svc.worker.checkAndUpdate: %s", err.Error())
 					return
 				}
@@ -145,4 +155,15 @@ Loop:
 		}()
 	}
 	wg.Wait()
+}
+
+func listOrdersString(orders []Order) string {
+	if len(orders) == 0 {
+		return "[]"
+	}
+	listNumbers := make([]string, 0, len(orders))
+	for _, order := range orders {
+		listNumbers = append(listNumbers, order.Number)
+	}
+	return strings.Join(listNumbers, ",")
 }

@@ -4,7 +4,7 @@ SHELL := /usr/bin/env bash
 .PHONY: run test run_memory g_up g_down
 
 run:
-	ENV_FILE=./.env ./run.sh & ./cmd/accrual/accrual_linux_amd64 -a localhost:8090
+	ENV_FILE=./.env ./run.sh & ./cmd/accrual/accrual_linux_amd64 -a localhost:8081
 
 test:
 	go test ./... -v

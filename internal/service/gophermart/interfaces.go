@@ -35,9 +35,9 @@ type GetApiOrdered interface {
 }
 
 type AccrualResponse struct {
-	OrderNumber string  `json:"number"`
-	Status      string  `json:"status"`
-	Accrual     float64 `json:"accrual"`
+	OrderNumber string   `json:"number"`
+	Status      string   `json:"status"`
+	Accrual     *float64 `json:"accrual"`
 }
 
 type AddOrdered interface {
@@ -45,8 +45,9 @@ type AddOrdered interface {
 }
 
 type ListUpdateApplyAccrual interface {
-	ListPending(ctx context.Context, limit uint16, statuses []string, timeSync time.Time) ([]Order, error)
+	ListPending(ctx context.Context, limit int32, statuses []string, timeSync time.Time) ([]Order, error)
 	UpdateFromAccrual(ctx context.Context, number string, status string, nextSync time.Time) error
+	UpdateSyncTime(ctx context.Context, number string, nextSync time.Time) error
 	ApplyAccrual(ctx context.Context, number string, accrual int64, userID uint64) error
 }
 
