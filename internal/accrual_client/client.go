@@ -42,6 +42,7 @@ func (c *Client) GetOrder(ctx context.Context, number string) (response *gopherm
 	if err != nil {
 		return nil, fmt.Errorf("acrualClient.GetOrder: %w", err)
 	}
+	logger.Log.Debugf("accrualClient.GetOrder: resp.StatusCode: %d", resp.StatusCode)
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusTooManyRequests {
 		return nil, gophermart.ErrToManyRequests
@@ -52,7 +53,7 @@ func (c *Client) GetOrder(ctx context.Context, number string) (response *gopherm
 	}
 	if resp.StatusCode == http.StatusNoContent {
 		return &gophermart.AccrualResponse{
-			Status: "NEW",
+			Status:      "NEW",
 			OrderNumber: number,
 		}, nil
 	}
@@ -66,6 +67,8 @@ func (c *Client) GetOrder(ctx context.Context, number string) (response *gopherm
 	}
 	if status, ok := mapStatus[accrualResponse.Status]; ok {
 		accrualResponse.Status = status
+		logger.Log.Debugf("raw string: %s", string(raw))
+		logger.Log.Debugf("accrualRespnse: %s", accrualResponse)
 		return &accrualResponse, nil
 	} else {
 		return nil, fmt.Errorf("accrualClient.GetOrder: status not found: %s", accrualResponse.Status)

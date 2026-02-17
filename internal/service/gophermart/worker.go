@@ -53,6 +53,7 @@ func (w *worker) Run() {
 		w.wg.Add(1)
 		go w.loop(ctx)
 	})
+	logger.Log.Info("run svc.worker")
 }
 
 func (w *worker) Stop() {
@@ -62,6 +63,7 @@ func (w *worker) Stop() {
 		})
 	}
 	w.wg.Wait()
+	logger.Log.Info("stop svc.worker")
 }
 
 func (w *worker) loop(ctx context.Context) {
@@ -92,6 +94,7 @@ func (w *worker) loop(ctx context.Context) {
 }
 
 func (w *worker) checkAndUpdate(ctx context.Context) {
+	logger.Log.Debugf("svc.worker.CheckAndUpdate start")
 	now := time.Now()
 	orders, err := w.checkerDb.ListPending(ctx, limitRequest, []string{"NEW", "PROCESSING"}, now)
 	if err != nil {
@@ -121,6 +124,7 @@ Loop:
 		go func() {
 			defer wg.Done()
 			defer func() { <-w.chLimit }()
+			logger.Log.Debugf("Request order: %s", o.Number)
 			responseAccrual, err := w.accrualClient.GetOrder(ctxBatch, o.Number)
 			if errors.Is(err, ErrToManyRequests) {
 				logger.Log.Warnf("too many requests to accrual service: code 429")
@@ -128,6 +132,7 @@ Loop:
 				once.Do(cancel)
 				return
 			}
+			logger.Log.Debugf("Response order: %s - Status %s", o.Number, responseAccrual.Status)
 			if err != nil {
 				logger.Log.Errorf("svc.worker.checkAndUpdate: %s", err.Error())
 				return
@@ -138,7 +143,7 @@ Loop:
 			}
 			if responseAccrual.Status != o.OrderStatus {
 				if responseAccrual.Status == "PROCESSED" {
-					if err := w.checkerDb.ApplyAccrual(ctx, o.Number, int64(*responseAccrual.Accrual), o.UserID); err != nil {
+					if err := w.checkerDb.ApplyAccrual(ctx, o.Number, int64(responseAccrual.Accrual * 100), o.UserID); err != nil {
 						logger.Log.Errorf("svc.worker.checkAndUpdate: %s", err.Error())
 						return
 					}

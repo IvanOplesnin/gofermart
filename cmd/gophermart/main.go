@@ -39,6 +39,9 @@ func main() {
 	if err != nil {
 		logger.Log.Fatalf("svc create error: %s", err.Error())
 	}
+	
+	svc.Start()
+	defer svc.Stop()
 
 	mux := handler.InitHandler(svc, svc, svc, svc)
 	logger.Log.Infof("Listen on %s", cfg.RunAddress)

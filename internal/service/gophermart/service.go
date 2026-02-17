@@ -126,14 +126,22 @@ func (s *Service) Auth(ctx context.Context, login string, password string) (stri
 	return tokenString, nil
 }
 
-func (s *Service) CheckToken(ctx context.Context, token string) (mw.Claims, error) {
+func (s *Service) CheckToken(ctx context.Context, token string) (cl mw.Claims, err error) {
 	const msg = "service.CheckToken"
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
+
+	defer func() {
+		if err != nil {
+			logger.Log.Debugf("%s: %s", msg, err)
+		}
+	}()
 
 	claims, err := ParseJwtToken(token, s.secret)
 	if err != nil {
 		return mw.Claims{}, err
 	}
+
+	logger.Log.Debugf("claims.UserID: %v", claims.UserID)
 
 	_, err = s.userCRUD.GetUserByID(ctx, claims.UserID)
 	if errors.Is(err, ErrNoRow) {
@@ -160,8 +168,9 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 	}
 	parser := jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}))
 
-	tok, err := parser.ParseWithClaims(token, claims, keyFunc)
+	tok, err := parser.ParseWithClaims(token, &claims, keyFunc)
 	if err != nil {
+		logger.Log.Errorf("parseJwtError: %s", err.Error())
 		return Claims{}, mw.ErrInvalidToken
 	}
 
@@ -169,6 +178,7 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 		return Claims{}, mw.ErrInvalidToken
 	}
 
+	logger.Log.Debugf("claims.UserID: %v", claims.UserID)
 	if claims.UserID == 0 {
 		return Claims{}, mw.ErrNotUserFound
 	}
@@ -177,7 +187,7 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 }
 
 type Claims struct {
-	UserID uint64
+	UserID uint64 
 }
 
 func (c *Claims) String() string {

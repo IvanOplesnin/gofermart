@@ -3,6 +3,7 @@ package gophermart
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 )
 
@@ -35,9 +36,13 @@ type GetApiOrdered interface {
 }
 
 type AccrualResponse struct {
-	OrderNumber string   `json:"number"`
+	OrderNumber string   `json:"order"`
 	Status      string   `json:"status"`
-	Accrual     *float64 `json:"accrual"`
+	Accrual     float64 `json:"accrual"`
+}
+
+func (a AccrualResponse) String() string {
+	return fmt.Sprintf("{OrderNumber: %s, Status: %s, Accrual: %v}", a.OrderNumber, a.Status, a.Accrual)
 }
 
 type AddOrdered interface {
