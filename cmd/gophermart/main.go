@@ -1,6 +1,9 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
@@ -11,6 +14,8 @@ import (
 	"github.com/IvanOplesnin/gofermart.git/internal/repository/psql"
 	"github.com/IvanOplesnin/gofermart.git/internal/service/gophermart"
 	"github.com/IvanOplesnin/gofermart.git/internal/service/hasher"
+	migrate "github.com/IvanOplesnin/gofermart.git/migrations"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func main() {
@@ -18,6 +23,9 @@ func main() {
 	log.Println(cfg)
 	if err := logger.SetupLogger(&cfg.Logger); err != nil {
 		log.Fatalf("error setupLogger: %s", err.Error())
+	}
+	if err := runMigrate(cfg); err != nil {
+		log.Fatal(err)
 	}
 
 	db, err := psql.Connect(cfg.Dsn)
@@ -39,7 +47,7 @@ func main() {
 	if err != nil {
 		logger.Log.Fatalf("svc create error: %s", err.Error())
 	}
-	
+
 	svc.Start()
 	defer svc.Stop()
 
@@ -49,4 +57,34 @@ func main() {
 	if err := http.ListenAndServe(cfg.RunAddress, mux); err != nil {
 		logger.Log.Fatalf("error ListenAndServe: %s", err.Error())
 	}
+}
+
+func runMigrate(cfg *config.Config) error {
+	if cfg.Dsn == "" {
+		return nil
+	}
+	db, err := sql.Open("pgx", cfg.Dsn)
+	if err != nil {
+		return fmt.Errorf("open db: %w", err)
+	}
+	defer db.Close()
+
+	if err := migrate.Up(db); err != nil {
+		if isInsufficientPrivilege(err) {
+			logger.Log.Infof("migrations skipped (insufficient privileges): %v", err)
+			return nil
+		}
+		return fmt.Errorf("migrate up: %w", err)
+	}
+
+	return nil
+}
+
+func isInsufficientPrivilege(err error) bool {
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		// 42501 = insufficient_privilege
+		return pgErr.Code == "42501"
+	}
+	return false
 }
