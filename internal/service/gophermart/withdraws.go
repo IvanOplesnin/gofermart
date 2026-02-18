@@ -11,8 +11,8 @@ import (
 )
 
 type WithdrawerDB interface {
-	Withdraw(ctx context.Context, userId int32, summa int32, order string) error
-	ListWithdraws(ctx context.Context, userId int32) ([]Withdraw, error)
+	Withdraw(ctx context.Context, userID int32, summa int32, order string) error
+	ListWithdraws(ctx context.Context, userID int32) ([]Withdraw, error)
 }
 
 type Withdraw struct {

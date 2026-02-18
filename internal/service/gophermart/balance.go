@@ -10,7 +10,7 @@ import (
 )
 
 type BalanceDB interface {
-	Balance(ctx context.Context, userId int32) (Balance, error)
+	Balance(ctx context.Context, userID int32) (Balance, error)
 }
 
 type Balance struct {

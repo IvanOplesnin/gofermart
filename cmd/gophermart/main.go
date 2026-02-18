@@ -43,8 +43,8 @@ func main() {
 		WorkerDB:      repo,
 		Ordered:       repo,
 		AccrualClient: accrualClient,
-		BalanceDb:     repo,
-		WithdrawerDb:  repo,
+		BalanceDB:     repo,
+		WithdrawerDB:  repo,
 	})
 	if err != nil {
 		logger.Log.Fatalf("svc create error: %s", err.Error())

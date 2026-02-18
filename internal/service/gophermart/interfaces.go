@@ -47,7 +47,7 @@ func (a AccrualResponse) String() string {
 
 type Ordered interface {
 	CreateOrder(ctx context.Context, userID int32, number string) (created bool, ownerUserID int32, err error)
-	GetOrders(ctx context.Context, userId int32) ([]Order, error)
+	GetOrders(ctx context.Context, userID int32) ([]Order, error)
 }
 
 type ListUpdateApplyAccrual interface {

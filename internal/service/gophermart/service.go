@@ -21,7 +21,7 @@ type Service struct {
 	Ordered  Ordered
 
 	worker        *worker
-	workerDb      ListUpdateApplyAccrual
+	workerDB      ListUpdateApplyAccrual
 	clientAccrual GetAPIOrdered
 
 	withdrawDB WithdrawerDB
@@ -39,8 +39,8 @@ type ServiceDeps struct {
 	WorkerDB      ListUpdateApplyAccrual
 	AccrualClient GetAPIOrdered
 
-	WithdrawerDb WithdrawerDB
-	BalanceDb    BalanceDB
+	WithdrawerDB WithdrawerDB
+	BalanceDB    BalanceDB
 }
 
 func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
@@ -62,10 +62,10 @@ func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
 	if deps.AccrualClient == nil {
 		return nil, fmt.Errorf("gophermart.New: AccrualClient is nil")
 	}
-	if deps.WithdrawerDb == nil {
+	if deps.WithdrawerDB == nil {
 		return nil, fmt.Errorf("gophermart.New: WithdrawerDb is nil")
 	}
-	if deps.BalanceDb == nil {
+	if deps.BalanceDB == nil {
 		return nil, fmt.Errorf("gophermart.New: balanceDb is nil")
 	}
 
@@ -74,8 +74,8 @@ func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
 		secret:     []byte(cfg.Secret),
 		userCRUD:   deps.UserCRUD,
 		Ordered:    deps.Ordered,
-		withdrawDB: deps.WithdrawerDb,
-		balanceDB:  deps.BalanceDb,
+		withdrawDB: deps.WithdrawerDB,
+		balanceDB:  deps.BalanceDB,
 	}
 
 	svc.worker = newWorker(deps.AccrualClient, deps.WorkerDB)

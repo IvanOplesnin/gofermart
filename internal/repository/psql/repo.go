@@ -60,14 +60,14 @@ func (r *Repo) GetUserByLogin(ctx context.Context, login string) (gophermart.Use
 }
 
 func (r *Repo) GetUserByID(ctx context.Context, id int32) (int32, error) {
-	userId, err := r.queries.GetUserByID(ctx, int32(id))
+	userID, err := r.queries.GetUserByID(ctx, int32(id))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return 0, gophermart.ErrNoRow
 	}
 	if err != nil {
 		return 0, fmt.Errorf("repo.GetUserById error: %w", err)
 	}
-	return userId, nil
+	return userID, nil
 }
 
 func (r *Repo) CreateOrder(ctx context.Context, userID int32, number string) (bool, int32, error) {
@@ -92,8 +92,8 @@ func (r *Repo) CreateOrder(ctx context.Context, userID int32, number string) (bo
 	return false, 0, fmt.Errorf("repo.CreateOrder:: %w", err)
 }
 
-func (r *Repo) GetOrders(ctx context.Context, userId int32) ([]gophermart.Order, error) {
-	rows, err := r.queries.GetOrdersByUserID(ctx, userId)
+func (r *Repo) GetOrders(ctx context.Context, userID int32) ([]gophermart.Order, error) {
+	rows, err := r.queries.GetOrdersByUserID(ctx, userID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return []gophermart.Order{}, nil
 	}
@@ -113,10 +113,10 @@ func (r *Repo) GetOrders(ctx context.Context, userId int32) ([]gophermart.Order,
 	return orders, nil
 }
 
-func (r *Repo) ListWithdraws(ctx context.Context, userId int32) ([]gophermart.Withdraw, error) {
+func (r *Repo) ListWithdraws(ctx context.Context, userID int32) ([]gophermart.Withdraw, error) {
 	var result []gophermart.Withdraw
 	err := r.InTx(ctx, func(rTx *Repo) error {
-		withdraws, err := rTx.queries.ListWithdraws(ctx, userId)
+		withdraws, err := rTx.queries.ListWithdraws(ctx, userID)
 		if err != nil {
 			return err
 		}
@@ -142,13 +142,13 @@ func (r *Repo) ListWithdraws(ctx context.Context, userId int32) ([]gophermart.Wi
 	return result, nil
 }
 
-func (r *Repo) Withdraw(ctx context.Context, userId int32, summa int32, order string) error {
+func (r *Repo) Withdraw(ctx context.Context, userID int32, summa int32, order string) error {
 	err := r.InTx(ctx, func(rTx *Repo) error {
-		if err := rTx.queries.EnsureBalanceRow(ctx, userId); err != nil {
+		if err := rTx.queries.EnsureBalanceRow(ctx, userID); err != nil {
 			return err
 		}
 		_, err := rTx.queries.WithdrawIfEnough(ctx, query.WithdrawIfEnoughParams{
-			UserID: userId,
+			UserID: userID,
 			Summa:  summa,
 		})
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -158,7 +158,7 @@ func (r *Repo) Withdraw(ctx context.Context, userId int32, summa int32, order st
 			return err
 		}
 		err = rTx.queries.AddWithdrawal(ctx, query.AddWithdrawalParams{
-			UserID:      userId,
+			UserID:      userID,
 			OrderNumber: order,
 			Summa:       summa,
 			ProcessedAt: pgtype.Timestamptz{Valid: true, Time: time.Now()},
@@ -178,14 +178,14 @@ func (r *Repo) Withdraw(ctx context.Context, userId int32, summa int32, order st
 	return nil
 }
 
-func (r *Repo) Balance(ctx context.Context, userId int32) (gophermart.Balance, error) {
+func (r *Repo) Balance(ctx context.Context, userID int32) (gophermart.Balance, error) {
 	var balance gophermart.Balance
 	err := r.InTx(ctx, func(rTx *Repo) error {
-		err := rTx.queries.EnsureBalanceRow(ctx, userId)
+		err := rTx.queries.EnsureBalanceRow(ctx, userID)
 		if err != nil {
 			return err
 		}
-		balanceRow, err := rTx.queries.BalnceByUserID(ctx, userId)
+		balanceRow, err := rTx.queries.BalnceByUserID(ctx, userID)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return gophermart.ErrNoRow
 		}
