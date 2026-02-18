@@ -28,3 +28,10 @@ SELECT id, user_id, "number", "status", uploaded_at
 FROM order_numbers
 WHERE "number" = $1
 LIMIT 1;
+
+
+-- name: GetOrdersByUserID :many
+SELECT id, user_id, "number", "status", accrual, uploaded_at
+FROM order_numbers
+WHERE user_id = $1
+ORDER BY uploaded_at DESC;

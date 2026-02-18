@@ -12,13 +12,13 @@ var (
 )
 
 type UserCRUD interface {
-	AddUser(ctx context.Context, login string, password_hash string) (uint64, error)
+	AddUser(ctx context.Context, login string, password_hash string) (int32, error)
 	GetUserByLogin(ctx context.Context, login string) (User, error)
-	GetUserByID(ctx context.Context, id uint64) (uint64, error)
+	GetUserByID(ctx context.Context, id int32) (int32, error)
 }
 
 type User struct {
-	ID           uint64 `json:"id"`
+	ID           int32 `json:"id"`
 	Login        string `json:"login"`
 	HashPassword string `json:"hash_password"`
 }
@@ -46,7 +46,7 @@ func (a AccrualResponse) String() string {
 }
 
 type Ordered interface {
-	CreateOrder(ctx context.Context, userID uint64, number string) (created bool, ownerUserID uint64, err error)
+	CreateOrder(ctx context.Context, userID int32, number string) (created bool, ownerUserID int32, err error)
 	GetOrders(ctx context.Context, userId int32) ([]Order, error)
 }
 
@@ -54,11 +54,11 @@ type ListUpdateApplyAccrual interface {
 	ListPending(ctx context.Context, limit int32, statuses []string, timeSync time.Time) ([]Order, error)
 	UpdateFromAccrual(ctx context.Context, number string, status string, nextSync time.Time) error
 	UpdateSyncTime(ctx context.Context, number string, nextSync time.Time) error
-	ApplyAccrual(ctx context.Context, number string, accrual int64, userID uint64) error
+	ApplyAccrual(ctx context.Context, number string, accrual int64, userID int32) error
 }
 
 type Order struct {
-	UserID      uint64
+	UserID      int32
 	Number      string
 	OrderStatus string
 	Accrual     int32

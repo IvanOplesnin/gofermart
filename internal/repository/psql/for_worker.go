@@ -24,7 +24,7 @@ func (r *Repo) ListPending(ctx context.Context, limit int32, statuses []string, 
 		orders := make([]gophermart.Order, 0, len(row))
 		for _, order := range row {
 			orders = append(orders, gophermart.Order{
-				UserID:      uint64(order.UserID),
+				UserID:      order.UserID,
 				Number:      order.Number,
 				OrderStatus: order.OrderStatus,
 				UploadedAt:  order.UploadedAt.Time,
@@ -59,7 +59,7 @@ func (r *Repo) UpdateSyncTime(ctx context.Context, number string, nextSync time.
 	return nil
 }
 
-func (r *Repo) ApplyAccrual(ctx context.Context, number string, accrual int64, userID uint64) error {
+func (r *Repo) ApplyAccrual(ctx context.Context, number string, accrual int64, userID int32) error {
 	err := r.InTx(ctx, func(rTx *Repo) error {
 		paramsMark := query.MarkOrderProcessedParams{
 			Number:  number,

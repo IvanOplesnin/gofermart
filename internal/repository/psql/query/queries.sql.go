@@ -79,6 +79,49 @@ func (q *Queries) GetOrderByNumber(ctx context.Context, number string) (GetOrder
 	return i, err
 }
 
+const getOrdersByUserID = `-- name: GetOrdersByUserID :many
+SELECT id, user_id, "number", "status", accrual, uploaded_at
+FROM order_numbers
+WHERE user_id = $1
+ORDER BY uploaded_at DESC
+`
+
+type GetOrdersByUserIDRow struct {
+	ID         int32
+	UserID     int32
+	Number     string
+	Status     string
+	Accrual    pgtype.Int4
+	UploadedAt pgtype.Timestamptz
+}
+
+func (q *Queries) GetOrdersByUserID(ctx context.Context, userID int32) ([]GetOrdersByUserIDRow, error) {
+	rows, err := q.db.Query(ctx, getOrdersByUserID, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetOrdersByUserIDRow
+	for rows.Next() {
+		var i GetOrdersByUserIDRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.Number,
+			&i.Status,
+			&i.Accrual,
+			&i.UploadedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getUserByID = `-- name: GetUserByID :one
 SELECT id
 FROM users

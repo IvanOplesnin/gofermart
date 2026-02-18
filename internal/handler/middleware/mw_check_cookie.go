@@ -21,7 +21,7 @@ type TokenChecker interface {
 }
 
 type Claims struct {
-	UserID uint64 `json:"user_id"`
+	UserID int32 `json:"user_id"`
 }
 
 func CheckCookie(cht TokenChecker) func(http.Handler) http.Handler {

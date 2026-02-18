@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"io"
 	"net/http"
+	"strings"
 
 	"github.com/IvanOplesnin/gofermart.git/internal/logger"
 )
@@ -30,48 +30,48 @@ var ErrInvalidOrderNumber = errors.New("invalid order number")
 var ErrEnoughMoney = errors.New("not enough money")
 var ErrInvalidSumma = errors.New("invalid summa")
 
-
 func WithdrawHandler(wd Withdrawer) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get(contentTypeKey) != applicationJSONValue {
+		ct := r.Header.Get(contentTypeKey)
+		if ct == "" || !strings.HasPrefix(ct, applicationJSONValue) {
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
+
 		var withdrawData RequestWithdraw
-		raw, err := io.ReadAll(r.Body)
-		if err != nil {
-			logger.Log.Errorf("WithdrawHandler error: %s", err.Error())
+		if err := json.NewDecoder(r.Body).Decode(&withdrawData); err != nil {
+			logger.Log.Errorf("WithdrawHandler decode error: %s", err.Error())
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		if err := json.Unmarshal(raw, &withdrawData); err != nil {
-			logger.Log.Errorf("WithdrawHandler error: %s", err.Error())
-			w.WriteHeader(http.StatusBadRequest)
+
+		err := wd.Withdraw(r.Context(), withdrawData.OrderNumber, withdrawData.Summa)
+
+		switch {
+		case err == nil:
+			w.WriteHeader(http.StatusOK)
 			return
-		}
-		ctx := r.Context()
-		err = wd.Withdraw(ctx, withdrawData.OrderNumber, withdrawData.Summa)
-		if errors.Is(err, ErrInvalidOrderNumber) {
-			logger.Log.Infof("WithdrawHandler invalid oreder_number: %s", withdrawData.OrderNumber)
+
+		case errors.Is(err, ErrEnoughMoney):
+			logger.Log.Infof("WithdrawHandler not enough money: order=%s", withdrawData.OrderNumber)
+			w.WriteHeader(http.StatusPaymentRequired)
+			return
+
+		case errors.Is(err, ErrInvalidOrderNumber):
+			logger.Log.Infof("WithdrawHandler invalid order_number: order=%s", withdrawData.OrderNumber)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
-		}
-		if errors.Is(err, ErrEnoughMoney) {
-			logger.Log.Infof("WithdrawHandler not enough money: %s", withdrawData.OrderNumber)
+
+		case errors.Is(err, ErrInvalidSumma):
+			logger.Log.Infof("WithdrawHandler invalid summa: order=%s sum=%v", withdrawData.OrderNumber, withdrawData.Summa)
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
-		}
-		if errors.Is(err, ErrInvalidSumma) {
-			logger.Log.Infof("WithdrawHandler not enough money: %s", withdrawData.OrderNumber)
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-		if err != nil {
+
+		default:
 			logger.Log.Errorf("WithdrawHandler error: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		w.WriteHeader(http.StatusOK)
 	}
 }
 

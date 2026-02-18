@@ -29,14 +29,14 @@ ON order_numbers (next_sync_at, uploaded_at)
 WHERE "status" IN ('NEW', 'PROCESSING');
 
 CREATE TABLE IF NOT EXISTS user_balance (
-        id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-        user_id INTEGER NOT NULL,
-        balance INTEGER NOT NULL DEFAULT 0,
-        withdrawn INTEGER NOT NULL DEFAULT 0,
+    id INTEGER PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    user_id INTEGER NOT NULL,
+    balance INTEGER NOT NULL DEFAULT 0,
+    withdrawn INTEGER NOT NULL DEFAULT 0,
 
-        CHECK (balance >= 0 AND withdrawn >= 0),
-        CONSTRAINT user_balance_user_uk UNIQUE (user_id),
-        CONSTRAINT user_balance_user_fk FOREIGN KEY (user_id) REFERENCES users(id)
+    CHECK (balance >= 0 AND withdrawn >= 0),
+    CONSTRAINT user_balance_user_uk UNIQUE (user_id),
+    CONSTRAINT user_balance_user_fk FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE IF NOT EXISTS withdraws (

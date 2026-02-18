@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/IvanOplesnin/gofermart.git/internal/handler"
@@ -36,7 +37,7 @@ func (s *Service) Withdraw(ctx context.Context, orderNumber string, summa float6
 	if err != nil {
 		return wrapError(err)
 	}
-	err = s.withdrawDb.Withdraw(ctx, int32(userId), int32(summa*100), orderNumber)
+	err = s.withdrawDb.Withdraw(ctx, int32(userId), int32(math.Round(summa*100)), orderNumber)
 	if err == nil {
 		return nil
 	}
@@ -47,4 +48,30 @@ func (s *Service) Withdraw(ctx context.Context, orderNumber string, summa float6
 		return handler.ErrInvalidOrderNumber
 	}
 	return wrapError(err)
+}
+
+func (s *Service) ListWithdraws(ctx context.Context) ([]handler.Withdraw, error) {
+	const msg = "service.ListWithdraws"
+	wrapErr := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
+
+	userId, err := handler.UserIdFromCtx(ctx)
+	if err != nil {
+		return nil, wrapErr(err)
+	}
+	withdraws, err := s.withdrawDb.ListWithdraws(ctx, int32(userId))
+	if err != nil {
+		return nil, wrapErr(err)
+	}
+	if len(withdraws) == 0 {
+		return []handler.Withdraw{}, nil
+	}
+	respWithdraws := make([]handler.Withdraw, 0, len(withdraws))
+	for _, w := range withdraws {
+		respWithdraws = append(respWithdraws, handler.Withdraw{
+			OrderNumber: w.OrderNumber,
+			Summa:       float64(w.Summa) / 100,
+			ProcessedAt: handler.RFC3339Time(w.ProcessedAt),
+		})
+	}
+	return respWithdraws, nil
 }

@@ -39,14 +39,14 @@ func InitHandler(deps HandlerDeps) *chi.Mux {
 		pr.Post("/api/user/orders", AddOrderHandler(deps.Ordered))
 		pr.Get("/api/user/orders", OrdersHandler(deps.Ordered))
 		pr.Get("/api/user/balance", BalanceHandler(deps.Balancer))
-		pr.Post("api/user/withdraw", WithdrawHandler(deps.Withdrawer))
+		pr.Post("/api/user/withdraw", WithdrawHandler(deps.Withdrawer))
 		pr.Get("/api/user/withdrawals", ListWithdrawHandler(deps.Withdrawer))
 	})
 
 	return router
 }
 
-func UserIdFromCtx(ctx context.Context) (uint64, error) {
+func UserIdFromCtx(ctx context.Context) (int32, error) {
 	claims, ok := ctx.Value(mw.ClaimsKey).(mw.Claims)
 	if !ok {
 		return 0, errors.New("user id not found")

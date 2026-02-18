@@ -25,6 +25,8 @@ type Service struct {
 	clientAccrual GetApiOrdered
 
 	withdrawDb WithdrawerDb
+
+	balanceDb BalanceDb
 }
 
 var ErrNoRow = errors.New("no row")
@@ -38,6 +40,7 @@ type ServiceDeps struct {
 	AccrualClient GetApiOrdered
 
 	WithdrawerDb WithdrawerDb
+	BalanceDb    BalanceDb
 }
 
 func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
@@ -62,6 +65,9 @@ func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
 	if deps.WithdrawerDb == nil {
 		return nil, fmt.Errorf("gophermart.New: WithdrawerDb is nil")
 	}
+	if deps.BalanceDb == nil {
+		return nil, fmt.Errorf("gophermart.New: balanceDb is nil")
+	}
 
 	svc := &Service{
 		hash:       deps.Hasher,
@@ -69,6 +75,7 @@ func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
 		userCRUD:   deps.UserCRUD,
 		Ordered:    deps.Ordered,
 		withdrawDb: deps.WithdrawerDb,
+		balanceDb:  deps.BalanceDb,
 	}
 
 	svc.worker = newWorker(deps.AccrualClient, deps.WorkerDB)
@@ -195,7 +202,7 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 }
 
 type Claims struct {
-	UserID uint64
+	UserID int32
 }
 
 func (c *Claims) String() string {
@@ -207,7 +214,7 @@ type JwtClaims struct {
 	jwt.RegisteredClaims
 }
 
-func JwtToken(userID uint64, secret []byte) (string, error) {
+func JwtToken(userID int32, secret []byte) (string, error) {
 	const msg = "service.JwtToken"
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 

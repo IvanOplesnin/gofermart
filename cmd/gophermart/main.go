@@ -35,6 +35,8 @@ func main() {
 		WorkerDB:      repo,
 		Ordered:       repo,
 		AccrualClient: accrualClient,
+		BalanceDb:     repo,
+		WithdrawerDb:  repo,
 	})
 	if err != nil {
 		logger.Log.Fatalf("svc create error: %s", err.Error())
@@ -44,8 +46,14 @@ func main() {
 	defer svc.Stop()
 
 	mux := handler.InitHandler(handler.HandlerDeps{
-		
+		Reqistrar:    svc,
+		Auther:       svc,
+		TokenChecker: svc,
+		Ordered:      svc,
+		Balancer:     svc,
+		Withdrawer:   svc,
 	})
+
 	logger.Log.Infof("Listen on %s", cfg.RunAddress)
 
 	if err := http.ListenAndServe(cfg.RunAddress, mux); err != nil {
