@@ -9,13 +9,13 @@ import (
 	"github.com/jackc/pgx/v5"
 )
 
-type BalanceDb interface {
+type BalanceDB interface {
 	Balance(ctx context.Context, userId int32) (Balance, error)
 }
 
 type Balance struct {
-	Id       int32
-	UserId   int32
+	ID       int32
+	UserID   int32
 	Balance  int32
 	Withdraw int32
 }
@@ -24,12 +24,12 @@ func (s *Service) Balance(ctx context.Context) (handler.BalanceResponse, error) 
 	const msg = "service.Orders"
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
-	userId, err := handler.UserIDFromCtx(ctx)
+	userID, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return handler.BalanceResponse{}, wrapError(err)
 	}
 
-	balance, err := s.balanceDb.Balance(ctx, userId)
+	balance, err := s.balanceDB.Balance(ctx, userID)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return handler.BalanceResponse{}, nil
 	}

@@ -178,7 +178,6 @@ func (r *Repo) Withdraw(ctx context.Context, userId int32, summa int32, order st
 	return nil
 }
 
-
 func (r *Repo) Balance(ctx context.Context, userId int32) (gophermart.Balance, error) {
 	var balance gophermart.Balance
 	err := r.InTx(ctx, func(rTx *Repo) error {
@@ -194,8 +193,8 @@ func (r *Repo) Balance(ctx context.Context, userId int32) (gophermart.Balance, e
 			return err
 		}
 		balance = gophermart.Balance{
-			Id:       balanceRow.ID,
-			UserId:   balanceRow.UserID,
+			ID:       balanceRow.ID,
+			UserID:   balanceRow.UserID,
 			Balance:  balanceRow.Balance,
 			Withdraw: balanceRow.Withdrawn,
 		}

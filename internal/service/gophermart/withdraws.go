@@ -10,7 +10,7 @@ import (
 	"github.com/IvanOplesnin/gofermart.git/internal/handler"
 )
 
-type WithdrawerDb interface {
+type WithdrawerDB interface {
 	Withdraw(ctx context.Context, userId int32, summa int32, order string) error
 	ListWithdraws(ctx context.Context, userId int32) ([]Withdraw, error)
 }
@@ -33,11 +33,11 @@ func (s *Service) Withdraw(ctx context.Context, orderNumber string, summa float6
 	if summa <= 0 {
 		return handler.ErrInvalidSumma
 	}
-	userId, err := handler.UserIDFromCtx(ctx)
+	userID, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return wrapError(err)
 	}
-	err = s.withdrawDb.Withdraw(ctx, int32(userId), int32(math.Round(summa*100)), orderNumber)
+	err = s.withdrawDB.Withdraw(ctx, int32(userID), int32(math.Round(summa*100)), orderNumber)
 	if err == nil {
 		return nil
 	}
@@ -54,11 +54,11 @@ func (s *Service) ListWithdraws(ctx context.Context) ([]handler.Withdraw, error)
 	const msg = "service.ListWithdraws"
 	wrapErr := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
-	userId, err := handler.UserIDFromCtx(ctx)
+	userID, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return nil, wrapErr(err)
 	}
-	withdraws, err := s.withdrawDb.ListWithdraws(ctx, int32(userId))
+	withdraws, err := s.withdrawDB.ListWithdraws(ctx, int32(userID))
 	if err != nil {
 		return nil, wrapErr(err)
 	}

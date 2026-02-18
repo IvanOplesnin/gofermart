@@ -73,11 +73,11 @@ func (s *Service) Orders(ctx context.Context) ([]handler.Order, error) {
 	const msg = "service.Orders"
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
-	userId, err := handler.UserIDFromCtx(ctx)
+	userID, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return nil, wrapError(err)
 	}
-	orders, err := s.Ordered.GetOrders(ctx, int32(userId))
+	orders, err := s.Ordered.GetOrders(ctx, int32(userID))
 	if errors.Is(err, ErrNoRow) {
 		return []handler.Order{}, nil
 	}

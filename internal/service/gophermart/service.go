@@ -24,9 +24,9 @@ type Service struct {
 	workerDb      ListUpdateApplyAccrual
 	clientAccrual GetAPIOrdered
 
-	withdrawDb WithdrawerDb
+	withdrawDB WithdrawerDB
 
-	balanceDb BalanceDb
+	balanceDB BalanceDB
 }
 
 var ErrNoRow = errors.New("no row")
@@ -39,8 +39,8 @@ type ServiceDeps struct {
 	WorkerDB      ListUpdateApplyAccrual
 	AccrualClient GetAPIOrdered
 
-	WithdrawerDb WithdrawerDb
-	BalanceDb    BalanceDb
+	WithdrawerDb WithdrawerDB
+	BalanceDb    BalanceDB
 }
 
 func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
@@ -74,8 +74,8 @@ func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
 		secret:     []byte(cfg.Secret),
 		userCRUD:   deps.UserCRUD,
 		Ordered:    deps.Ordered,
-		withdrawDb: deps.WithdrawerDb,
-		balanceDb:  deps.BalanceDb,
+		withdrawDB: deps.WithdrawerDb,
+		balanceDB:  deps.BalanceDb,
 	}
 
 	svc.worker = newWorker(deps.AccrualClient, deps.WorkerDB)
