@@ -6,6 +6,8 @@ import (
 	"errors"
 	"io"
 	"net/http"
+
+	"github.com/IvanOplesnin/gofermart.git/internal/logger"
 )
 
 type Ordered interface {
@@ -61,6 +63,7 @@ func OrdersHandler(o Ordered) http.HandlerFunc {
 		ctx := r.Context()
 		orders, err := o.Orders(ctx)
 		if err != nil {
+			logger.Log.Errorf("ordersHandler error: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -70,6 +73,7 @@ func OrdersHandler(o Ordered) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(orders); err != nil {
+			logger.Log.Errorf("ordersHandler error: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

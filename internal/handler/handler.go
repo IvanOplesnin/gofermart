@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"time"
 
@@ -57,5 +58,5 @@ func UserIDFromCtx(ctx context.Context) (int32, error) {
 type RFC3339Time time.Time
 
 func (t RFC3339Time) MarshalJSON() ([]byte, error) {
-	return []byte(time.Time(t).Format(time.RFC3339)), nil
+	return json.Marshal(time.Time(t).Format(time.RFC3339))
 }
