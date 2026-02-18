@@ -7,25 +7,25 @@ import (
 	"github.com/IvanOplesnin/gofermart.git/internal/handler"
 )
 
-func (s *Service) AddOrder(ctx context.Context, orderId string) (bool, error) {
+func (s *Service) AddOrder(ctx context.Context, orderID string) (bool, error) {
 	const msg = "service.AddOrder"
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
-	if !validateLuna(orderId) {
+	if !validateLuna(orderID) {
 		return false, handler.ErrInvalidOrderID
 	}
-	userIdFromContext, err := handler.UserIDFromCtx(ctx)
+	userIDFromContext, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return false, wrapError(err)
 	}
-	created, owner, err := s.addOrdered.CreateOrder(ctx, userIdFromContext, orderId)
+	created, owner, err := s.addOrdered.CreateOrder(ctx, userIDFromContext, orderID)
 	if err != nil {
 		return false, wrapError(err)
 	}
 	if created {
 		return false, nil
 	}
-	if owner != userIdFromContext {
+	if owner != userIDFromContext {
 		return false, handler.ErrAnotherUserOrder
 	}
 	return true, nil
