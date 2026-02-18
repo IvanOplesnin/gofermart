@@ -8,13 +8,13 @@ import (
 )
 
 type Ordered interface {
-	AddOrder(ctx context.Context, order_id string) (exist bool, err error)
+	AddOrder(ctx context.Context, orderID string) (exist bool, err error)
 }
 
-var ErrInvalidOrderId = errors.New("invalid order id")
+var ErrInvalidOrderID = errors.New("invalid order id")
 var ErrAnotherUserOrder = errors.New("another user order")
 
-func AddOrderHandler(o Ordered) http.HandlerFunc  {
+func AddOrderHandler(o Ordered) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get(contentTypeKey) != textPlainValue {
 			w.WriteHeader(http.StatusBadRequest)
@@ -27,7 +27,7 @@ func AddOrderHandler(o Ordered) http.HandlerFunc  {
 		}
 		ctx := r.Context()
 		exist, err := o.AddOrder(ctx, string(number))
-		if errors.Is(err, ErrInvalidOrderId) {
+		if errors.Is(err, ErrInvalidOrderID) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}

@@ -60,14 +60,14 @@ func (r *Repo) GetUserByLogin(ctx context.Context, login string) (gophermart.Use
 }
 
 func (r *Repo) GetUserByID(ctx context.Context, id uint64) (uint64, error) {
-	userId, err := r.queries.GetUserByID(ctx, int32(id))
+	userID, err := r.queries.GetUserByID(ctx, int32(id))
 	if errors.Is(err, pgx.ErrNoRows) {
 		return 0, gophermart.ErrNoRow
 	}
 	if err != nil {
 		return 0, fmt.Errorf("repo.GetUserById error: %w", err)
 	}
-	return uint64(userId), nil
+	return uint64(userID), nil
 }
 
 

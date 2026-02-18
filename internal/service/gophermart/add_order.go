@@ -12,9 +12,12 @@ func (s *Service) AddOrder(ctx context.Context, orderId string) (bool, error) {
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
 	if !validateLuna(orderId) {
-		return false, handler.ErrInvalidOrderId
+		return false, handler.ErrInvalidOrderID
 	}
-	userIdFromContext, err := handler.UserIdFromCtx(ctx)
+	userIdFromContext, err := handler.UserIDFromCtx(ctx)
+	if err != nil {
+		return false, wrapError(err)
+	}
 	created, owner, err := s.addOrdered.CreateOrder(ctx, userIdFromContext, orderId)
 	if err != nil {
 		return false, wrapError(err)
@@ -64,4 +67,3 @@ func validateLuna(number string) bool {
 	}
 	return sum%10 == 0
 }
-
