@@ -21,17 +21,12 @@ type Service struct {
 	Ordered  Ordered
 
 	worker        *worker
-<<<<<<< HEAD
 	workerDb      ListUpdateApplyAccrual
-	clientAccrual GetApiOrdered
+	clientAccrual GetAPIOrdered
 
 	withdrawDb WithdrawerDb
 
 	balanceDb BalanceDb
-=======
-	workerDB      ListUpdateApplyAccrual
-	clientAccrual GetAPIOrdered
->>>>>>> master
 }
 
 var ErrNoRow = errors.New("no row")
@@ -42,14 +37,10 @@ type ServiceDeps struct {
 	Ordered  Ordered
 
 	WorkerDB      ListUpdateApplyAccrual
-<<<<<<< HEAD
-	AccrualClient GetApiOrdered
+	AccrualClient GetAPIOrdered
 
 	WithdrawerDb WithdrawerDb
 	BalanceDb    BalanceDb
-=======
-	AccrualClient GetAPIOrdered
->>>>>>> master
 }
 
 func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
@@ -214,11 +205,7 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 }
 
 type Claims struct {
-<<<<<<< HEAD
 	UserID int32
-=======
-	UserID uint64
->>>>>>> master
 }
 
 func (c *Claims) String() string {

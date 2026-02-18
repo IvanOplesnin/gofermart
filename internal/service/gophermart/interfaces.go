@@ -12,11 +12,7 @@ var (
 )
 
 type UserCRUD interface {
-<<<<<<< HEAD
-	AddUser(ctx context.Context, login string, password_hash string) (int32, error)
-=======
-	AddUser(ctx context.Context, login string, passwordHash string) (uint64, error)
->>>>>>> master
+	AddUser(ctx context.Context, login string, passwordHash string) (int32, error)
 	GetUserByLogin(ctx context.Context, login string) (User, error)
 	GetUserByID(ctx context.Context, id int32) (int32, error)
 }

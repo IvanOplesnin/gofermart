@@ -33,7 +33,7 @@ func (s *Service) Withdraw(ctx context.Context, orderNumber string, summa float6
 	if summa <= 0 {
 		return handler.ErrInvalidSumma
 	}
-	userId, err := handler.UserIdFromCtx(ctx)
+	userId, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return wrapError(err)
 	}
@@ -54,7 +54,7 @@ func (s *Service) ListWithdraws(ctx context.Context) ([]handler.Withdraw, error)
 	const msg = "service.ListWithdraws"
 	wrapErr := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
-	userId, err := handler.UserIdFromCtx(ctx)
+	userId, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return nil, wrapErr(err)
 	}

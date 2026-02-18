@@ -46,7 +46,7 @@ func InitHandler(deps HandlerDeps) *chi.Mux {
 	return router
 }
 
-func UserIDFromCtx(ctx context.Context) (uint64, error) {
+func UserIDFromCtx(ctx context.Context) (int32, error) {
 	claims, ok := ctx.Value(mw.ClaimsKey).(mw.Claims)
 	if !ok {
 		return 0, errors.New("user id not found")

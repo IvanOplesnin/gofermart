@@ -15,16 +15,11 @@ func (s *Service) AddOrder(ctx context.Context, orderID string) (bool, error) {
 	if !validateLuna(orderID) {
 		return false, handler.ErrInvalidOrderID
 	}
-<<<<<<< HEAD:internal/service/gophermart/order.go
-	userIdFromContext, err := handler.UserIdFromCtx(ctx)
-	created, owner, err := s.Ordered.CreateOrder(ctx, userIdFromContext, orderId)
-=======
 	userIDFromContext, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return false, wrapError(err)
 	}
-	created, owner, err := s.addOrdered.CreateOrder(ctx, userIDFromContext, orderID)
->>>>>>> master:internal/service/gophermart/add_order.go
+	created, owner, err := s.Ordered.CreateOrder(ctx, userIDFromContext, orderID)
 	if err != nil {
 		return false, wrapError(err)
 	}
@@ -73,13 +68,12 @@ func validateLuna(number string) bool {
 	}
 	return sum%10 == 0
 }
-<<<<<<< HEAD:internal/service/gophermart/order.go
 
 func (s *Service) Orders(ctx context.Context) ([]handler.Order, error) {
 	const msg = "service.Orders"
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
-	userId, err := handler.UserIdFromCtx(ctx)
+	userId, err := handler.UserIDFromCtx(ctx)
 	if err != nil {
 		return nil, wrapError(err)
 	}
@@ -109,5 +103,3 @@ func AccrualToFloatPtr(accrual int32) *float64 {
 	f := float64(accrual) / 100
 	return &f
 }
-=======
->>>>>>> master:internal/service/gophermart/add_order.go
