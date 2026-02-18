@@ -9,8 +9,7 @@ import (
 )
 
 type Ordered interface {
-<<<<<<< HEAD
-	AddOrder(ctx context.Context, order_id string) (exist bool, err error)
+	AddOrder(ctx context.Context, orderID string) (exist bool, err error)
 	Orders(ctx context.Context) ([]Order, error)
 }
 
@@ -19,9 +18,6 @@ type Order struct {
 	Status     string      `json:"status"`
 	Accrual    *float64    `json:"accrual"`
 	UploadedAt RFC3339Time `json:"uploaded_at"`
-=======
-	AddOrder(ctx context.Context, orderID string) (exist bool, err error)
->>>>>>> master
 }
 
 var ErrInvalidOrderID = errors.New("invalid order id")
