@@ -9,6 +9,7 @@ import (
 )
 
 type Ordered interface {
+<<<<<<< HEAD
 	AddOrder(ctx context.Context, order_id string) (exist bool, err error)
 	Orders(ctx context.Context) ([]Order, error)
 }
@@ -18,9 +19,12 @@ type Order struct {
 	Status     string      `json:"status"`
 	Accrual    *float64    `json:"accrual"`
 	UploadedAt RFC3339Time `json:"uploaded_at"`
+=======
+	AddOrder(ctx context.Context, orderID string) (exist bool, err error)
+>>>>>>> master
 }
 
-var ErrInvalidOrderId = errors.New("invalid order id")
+var ErrInvalidOrderID = errors.New("invalid order id")
 var ErrAnotherUserOrder = errors.New("another user order")
 
 func AddOrderHandler(o Ordered) http.HandlerFunc {
@@ -36,7 +40,7 @@ func AddOrderHandler(o Ordered) http.HandlerFunc {
 		}
 		ctx := r.Context()
 		exist, err := o.AddOrder(ctx, string(number))
-		if errors.Is(err, ErrInvalidOrderId) {
+		if errors.Is(err, ErrInvalidOrderID) {
 			w.WriteHeader(http.StatusUnprocessableEntity)
 			return
 		}

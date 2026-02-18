@@ -12,7 +12,11 @@ var (
 )
 
 type UserCRUD interface {
+<<<<<<< HEAD
 	AddUser(ctx context.Context, login string, password_hash string) (int32, error)
+=======
+	AddUser(ctx context.Context, login string, passwordHash string) (uint64, error)
+>>>>>>> master
 	GetUserByLogin(ctx context.Context, login string) (User, error)
 	GetUserByID(ctx context.Context, id int32) (int32, error)
 }
@@ -31,7 +35,7 @@ type Hasher interface {
 	ComparePasswordHash(password string, hash string) (bool, error)
 }
 
-type GetApiOrdered interface {
+type GetAPIOrdered interface {
 	GetOrder(ctx context.Context, number string) (response *AccrualResponse, err error)
 }
 

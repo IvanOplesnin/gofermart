@@ -13,17 +13,17 @@ import (
 )
 
 type Client struct {
-	baseUrl string
+	baseURL string
 }
 
-func New(baseUrl string) *Client {
+func New(baseURL string) *Client {
 	return &Client{
-		baseUrl: baseUrl,
+		baseURL: baseURL,
 	}
 }
 
 func (c *Client) GetOrder(ctx context.Context, number string) (response *gophermart.AccrualResponse, err error) {
-	uri, err := url.JoinPath(c.baseUrl, "/api/orders", number)
+	uri, err := url.JoinPath(c.baseURL, "/api/orders", number)
 	if err != nil {
 		return nil, fmt.Errorf("acrualClient.GetOrder: %s", err)
 	}

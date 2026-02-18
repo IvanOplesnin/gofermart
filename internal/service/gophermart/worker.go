@@ -3,7 +3,6 @@ package gophermart
 import (
 	"context"
 	"errors"
-	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -21,8 +20,8 @@ const (
 var ErrToManyRequests = errors.New("too many requests")
 
 type worker struct {
-	accrualClient GetApiOrdered
-	checkerDb     ListUpdateApplyAccrual
+	accrualClient GetAPIOrdered
+	checkerDB     ListUpdateApplyAccrual
 
 	rateLimitid atomic.Bool
 	cancelLoop  func()
@@ -33,10 +32,10 @@ type worker struct {
 	chLimit   chan struct{}
 }
 
-func newWorker(client GetApiOrdered, checker ListUpdateApplyAccrual) *worker {
+func newWorker(client GetAPIOrdered, checker ListUpdateApplyAccrual) *worker {
 	return &worker{
 		accrualClient: client,
-		checkerDb:     checker,
+		checkerDB:     checker,
 		chLimit:       make(chan struct{}, limitRequest),
 		rateLimitid:   atomic.Bool{},
 
@@ -96,7 +95,7 @@ func (w *worker) loop(ctx context.Context) {
 func (w *worker) checkAndUpdate(ctx context.Context) {
 	logger.Log.Debugf("svc.worker.CheckAndUpdate start")
 	now := time.Now()
-	orders, err := w.checkerDb.ListPending(ctx, limitRequest, []string{"NEW", "PROCESSING"}, now)
+	orders, err := w.checkerDB.ListPending(ctx, limitRequest, []string{"NEW", "PROCESSING"}, now)
 	if err != nil {
 		logger.Log.Errorf("svc.worker.checkAndUpdate: %v", err.Error())
 		return
@@ -106,7 +105,7 @@ func (w *worker) checkAndUpdate(ctx context.Context) {
 	}
 	logger.Log.WithFields(logrus.Fields{
 		"count_orders": len(orders),
-		"orders":       fmt.Sprintf("%s", listOrdersString(orders)),
+		"orders":       listOrdersString(orders),
 	}).Infof("worker.checkAndUpdate run")
 	ctxBatch, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -143,16 +142,16 @@ Loop:
 			}
 			if responseAccrual.Status != o.OrderStatus {
 				if responseAccrual.Status == "PROCESSED" {
-					if err := w.checkerDb.ApplyAccrual(ctx, o.Number, int64(responseAccrual.Accrual * 100), o.UserID); err != nil {
+					if err := w.checkerDB.ApplyAccrual(ctx, o.Number, int64(responseAccrual.Accrual*100), o.UserID); err != nil {
 						logger.Log.Errorf("svc.worker.checkAndUpdate: %s", err.Error())
 						return
 					}
-				} else if err := w.checkerDb.UpdateFromAccrual(ctx, o.Number, responseAccrual.Status, now.Add(time.Second*120)); err != nil {
+				} else if err := w.checkerDB.UpdateFromAccrual(ctx, o.Number, responseAccrual.Status, now.Add(time.Second*120)); err != nil {
 					logger.Log.Errorf("svc.worker.checkAndUpdate: %s", err.Error())
 					return
 				}
 			} else {
-				if err := w.checkerDb.UpdateSyncTime(ctx, o.Number, now.Add(time.Second*120)); err != nil {
+				if err := w.checkerDB.UpdateSyncTime(ctx, o.Number, now.Add(time.Second*120)); err != nil {
 					logger.Log.Errorf("svc.worker.checkAndUpdate: %s", err.Error())
 					return
 				}

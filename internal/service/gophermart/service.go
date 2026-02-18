@@ -21,12 +21,17 @@ type Service struct {
 	Ordered  Ordered
 
 	worker        *worker
+<<<<<<< HEAD
 	workerDb      ListUpdateApplyAccrual
 	clientAccrual GetApiOrdered
 
 	withdrawDb WithdrawerDb
 
 	balanceDb BalanceDb
+=======
+	workerDB      ListUpdateApplyAccrual
+	clientAccrual GetAPIOrdered
+>>>>>>> master
 }
 
 var ErrNoRow = errors.New("no row")
@@ -37,10 +42,14 @@ type ServiceDeps struct {
 	Ordered  Ordered
 
 	WorkerDB      ListUpdateApplyAccrual
+<<<<<<< HEAD
 	AccrualClient GetApiOrdered
 
 	WithdrawerDb WithdrawerDb
 	BalanceDb    BalanceDb
+=======
+	AccrualClient GetAPIOrdered
+>>>>>>> master
 }
 
 func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
@@ -101,14 +110,14 @@ func (s *Service) Register(ctx context.Context, login string, password string) (
 	}
 
 	logger.Log.Debugf("login: %s, hash: %s", login, hashPass)
-	userId, err := s.userCRUD.AddUser(ctx, login, hashPass)
+	userID, err := s.userCRUD.AddUser(ctx, login, hashPass)
 	if err != nil {
 		if errors.Is(err, ErrUserAlreadyExists) {
 			return "", handler.ErrUserAlreadyExists
 		}
 		return "", wrapError(err)
 	}
-	tokenString, err := JwtToken(userId, s.secret)
+	tokenString, err := JwtToken(userID, s.secret)
 	if err != nil {
 		return "", wrapError(err)
 	}
@@ -174,6 +183,9 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 	_, err := jwt.ParseWithClaims(token, &claims, func(token *jwt.Token) (interface{}, error) {
 		return secret, nil
 	})
+	if err != nil {
+		return Claims{}, err
+	}
 
 	keyFunc := func(t *jwt.Token) (any, error) {
 		if t.Method == nil || t.Method.Alg() != jwt.SigningMethodHS256.Alg() {
@@ -202,7 +214,11 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 }
 
 type Claims struct {
+<<<<<<< HEAD
 	UserID int32
+=======
+	UserID uint64
+>>>>>>> master
 }
 
 func (c *Claims) String() string {

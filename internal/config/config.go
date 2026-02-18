@@ -6,9 +6,9 @@ import (
 )
 
 const (
-	RunADDRESS_KEY         = "RUN_ADDRESS"
-	DSN_KEY                = "DATABASE_URI"
-	ACCRUAL_SYSTEM_ADDRESS = "ACCRUAL_SYSTEM_ADDRESS"
+	RunADDRESSKEY         = "RUN_ADDRESS"
+	DSNKEY                = "DATABASE_URI"
+	ACCRUALSYSTEMADDRESS = "ACCRUAL_SYSTEM_ADDRESS"
 )
 
 type Logger struct {
@@ -66,13 +66,13 @@ func InitConfig() *Config {
 		cfg.Secret = secret
 	}
 
-	if runAddress, ok := os.LookupEnv(RunADDRESS_KEY); ok {
+	if runAddress, ok := os.LookupEnv(RunADDRESSKEY); ok {
 		cfg.RunAddress = runAddress
 	}
-	if dsn, ok := os.LookupEnv(DSN_KEY); ok {
+	if dsn, ok := os.LookupEnv(DSNKEY); ok {
 		cfg.Dsn = dsn
 	}
-	if accrualServiceAddress, ok := os.LookupEnv(ACCRUAL_SYSTEM_ADDRESS); ok {
+	if accrualServiceAddress, ok := os.LookupEnv(ACCRUALSYSTEMADDRESS); ok {
 		cfg.AccrualServiceAddress = accrualServiceAddress
 	}
 

@@ -8,22 +8,30 @@ import (
 	"github.com/IvanOplesnin/gofermart.git/internal/handler"
 )
 
-func (s *Service) AddOrder(ctx context.Context, orderId string) (bool, error) {
+func (s *Service) AddOrder(ctx context.Context, orderID string) (bool, error) {
 	const msg = "service.AddOrder"
 	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
 
-	if !validateLuna(orderId) {
-		return false, handler.ErrInvalidOrderId
+	if !validateLuna(orderID) {
+		return false, handler.ErrInvalidOrderID
 	}
+<<<<<<< HEAD:internal/service/gophermart/order.go
 	userIdFromContext, err := handler.UserIdFromCtx(ctx)
 	created, owner, err := s.Ordered.CreateOrder(ctx, userIdFromContext, orderId)
+=======
+	userIDFromContext, err := handler.UserIDFromCtx(ctx)
+	if err != nil {
+		return false, wrapError(err)
+	}
+	created, owner, err := s.addOrdered.CreateOrder(ctx, userIDFromContext, orderID)
+>>>>>>> master:internal/service/gophermart/add_order.go
 	if err != nil {
 		return false, wrapError(err)
 	}
 	if created {
 		return false, nil
 	}
-	if owner != userIdFromContext {
+	if owner != userIDFromContext {
 		return false, handler.ErrAnotherUserOrder
 	}
 	return true, nil
@@ -65,6 +73,7 @@ func validateLuna(number string) bool {
 	}
 	return sum%10 == 0
 }
+<<<<<<< HEAD:internal/service/gophermart/order.go
 
 func (s *Service) Orders(ctx context.Context) ([]handler.Order, error) {
 	const msg = "service.Orders"
@@ -100,3 +109,5 @@ func AccrualToFloatPtr(accrual int32) *float64 {
 	f := float64(accrual) / 100
 	return &f
 }
+=======
+>>>>>>> master:internal/service/gophermart/add_order.go

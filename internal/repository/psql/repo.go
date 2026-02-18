@@ -59,15 +59,24 @@ func (r *Repo) GetUserByLogin(ctx context.Context, login string) (gophermart.Use
 	}, nil
 }
 
+<<<<<<< HEAD
 func (r *Repo) GetUserByID(ctx context.Context, id int32) (int32, error) {
 	userId, err := r.queries.GetUserByID(ctx, int32(id))
+=======
+func (r *Repo) GetUserByID(ctx context.Context, id uint64) (uint64, error) {
+	userID, err := r.queries.GetUserByID(ctx, int32(id))
+>>>>>>> master
 	if errors.Is(err, pgx.ErrNoRows) {
 		return 0, gophermart.ErrNoRow
 	}
 	if err != nil {
 		return 0, fmt.Errorf("repo.GetUserById error: %w", err)
 	}
+<<<<<<< HEAD
 	return userId, nil
+=======
+	return uint64(userID), nil
+>>>>>>> master
 }
 
 func (r *Repo) CreateOrder(ctx context.Context, userID int32, number string) (bool, int32, error) {
