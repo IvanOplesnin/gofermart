@@ -40,7 +40,7 @@ func InitHandler(deps HandlerDeps) *chi.Mux {
 		pr.Post("/api/user/orders", AddOrderHandler(deps.Ordered))
 		pr.Get("/api/user/orders", OrdersHandler(deps.Ordered))
 		pr.Get("/api/user/balance", BalanceHandler(deps.Balancer))
-		pr.Post("/api/user/withdraw", WithdrawHandler(deps.Withdrawer))
+		pr.Post("/api/user/balance/withdraw", WithdrawHandler(deps.Withdrawer))
 		pr.Get("/api/user/withdrawals", ListWithdrawHandler(deps.Withdrawer))
 	})
 

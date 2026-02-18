@@ -26,6 +26,7 @@ func BalanceHandler(b Balancer) http.HandlerFunc {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+		w.Header().Set(contentTypeKey, applicationJSONValue)
 		if err := json.NewEncoder(w).Encode(resp); err != nil {
 			logger.Log.Errorf("BalanceHandler error: %s", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
