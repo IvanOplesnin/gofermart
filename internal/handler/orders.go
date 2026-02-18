@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -9,12 +10,20 @@ import (
 
 type Ordered interface {
 	AddOrder(ctx context.Context, order_id string) (exist bool, err error)
+	Orders(ctx context.Context) ([]Order, error)
+}
+
+type Order struct {
+	Number     string      `json:"number"`
+	Status     string      `json:"status"`
+	Accrual    *float64    `json:"accrual"`
+	UploadedAt RFC3339Time `json:"uploaded_at"`
 }
 
 var ErrInvalidOrderId = errors.New("invalid order id")
 var ErrAnotherUserOrder = errors.New("another user order")
 
-func AddOrderHandler(o Ordered) http.HandlerFunc  {
+func AddOrderHandler(o Ordered) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Header.Get(contentTypeKey) != textPlainValue {
 			w.WriteHeader(http.StatusBadRequest)
@@ -44,5 +53,25 @@ func AddOrderHandler(o Ordered) http.HandlerFunc  {
 			return
 		}
 		w.WriteHeader(http.StatusAccepted)
+	}
+}
+
+func OrdersHandler(o Ordered) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		orders, err := o.Orders(ctx)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		if len(orders) == 0 {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(orders); err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 	}
 }

@@ -94,3 +94,6 @@ func (r *Repo) CreateOrder(ctx context.Context, userID uint64, number string) (b
 }
 
 
+func (r *Repo) GetOrders(ctx context.Context, userId int32) ([]gophermart.Order, error) {
+	return []gophermart.Order{}, nil
+}

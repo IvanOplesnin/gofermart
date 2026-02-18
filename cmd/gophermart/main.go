@@ -33,17 +33,19 @@ func main() {
 		Hasher:        hasher,
 		UserCRUD:      repo,
 		WorkerDB:      repo,
-		AddOrdered:    repo,
+		Ordered:       repo,
 		AccrualClient: accrualClient,
 	})
 	if err != nil {
 		logger.Log.Fatalf("svc create error: %s", err.Error())
 	}
-	
+
 	svc.Start()
 	defer svc.Stop()
 
-	mux := handler.InitHandler(svc, svc, svc, svc)
+	mux := handler.InitHandler(handler.HandlerDeps{
+		
+	})
 	logger.Log.Infof("Listen on %s", cfg.RunAddress)
 
 	if err := http.ListenAndServe(cfg.RunAddress, mux); err != nil {

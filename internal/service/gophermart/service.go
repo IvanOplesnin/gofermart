@@ -17,23 +17,27 @@ type Service struct {
 	hash   Hasher
 	secret []byte
 
-	userCRUD   UserCRUD
-	addOrdered AddOrdered
+	userCRUD UserCRUD
+	Ordered  Ordered
 
 	worker        *worker
 	workerDb      ListUpdateApplyAccrual
 	clientAccrual GetApiOrdered
+
+	withdrawDb WithdrawerDb
 }
 
 var ErrNoRow = errors.New("no row")
 
 type ServiceDeps struct {
-	Hasher     Hasher
-	UserCRUD   UserCRUD
-	AddOrdered AddOrdered
+	Hasher   Hasher
+	UserCRUD UserCRUD
+	Ordered  Ordered
 
 	WorkerDB      ListUpdateApplyAccrual
 	AccrualClient GetApiOrdered
+
+	WithdrawerDb WithdrawerDb
 }
 
 func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
@@ -46,7 +50,7 @@ func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
 	if deps.UserCRUD == nil {
 		return nil, fmt.Errorf("gophermart.New: UserCRUD is nil")
 	}
-	if deps.AddOrdered == nil {
+	if deps.Ordered == nil {
 		return nil, fmt.Errorf("gophermart.New: AddOrdered is nil")
 	}
 	if deps.WorkerDB == nil {
@@ -55,12 +59,16 @@ func New(cfg *config.Config, deps ServiceDeps) (*Service, error) {
 	if deps.AccrualClient == nil {
 		return nil, fmt.Errorf("gophermart.New: AccrualClient is nil")
 	}
+	if deps.WithdrawerDb == nil {
+		return nil, fmt.Errorf("gophermart.New: WithdrawerDb is nil")
+	}
 
 	svc := &Service{
 		hash:       deps.Hasher,
 		secret:     []byte(cfg.Secret),
 		userCRUD:   deps.UserCRUD,
-		addOrdered: deps.AddOrdered,
+		Ordered:    deps.Ordered,
+		withdrawDb: deps.WithdrawerDb,
 	}
 
 	svc.worker = newWorker(deps.AccrualClient, deps.WorkerDB)
@@ -187,7 +195,7 @@ func ParseJwtToken(token string, secret []byte) (Claims, error) {
 }
 
 type Claims struct {
-	UserID uint64 
+	UserID uint64
 }
 
 func (c *Claims) String() string {

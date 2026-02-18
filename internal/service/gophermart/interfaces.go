@@ -36,8 +36,8 @@ type GetApiOrdered interface {
 }
 
 type AccrualResponse struct {
-	OrderNumber string   `json:"order"`
-	Status      string   `json:"status"`
+	OrderNumber string  `json:"order"`
+	Status      string  `json:"status"`
 	Accrual     float64 `json:"accrual"`
 }
 
@@ -45,8 +45,9 @@ func (a AccrualResponse) String() string {
 	return fmt.Sprintf("{OrderNumber: %s, Status: %s, Accrual: %v}", a.OrderNumber, a.Status, a.Accrual)
 }
 
-type AddOrdered interface {
+type Ordered interface {
 	CreateOrder(ctx context.Context, userID uint64, number string) (created bool, ownerUserID uint64, err error)
+	GetOrders(ctx context.Context, userId int32) ([]Order, error)
 }
 
 type ListUpdateApplyAccrual interface {
@@ -60,5 +61,6 @@ type Order struct {
 	UserID      uint64
 	Number      string
 	OrderStatus string
+	Accrual     int32
 	UploadedAt  time.Time
 }

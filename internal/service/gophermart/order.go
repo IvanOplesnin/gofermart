@@ -2,6 +2,7 @@ package gophermart
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/IvanOplesnin/gofermart.git/internal/handler"
@@ -15,7 +16,7 @@ func (s *Service) AddOrder(ctx context.Context, orderId string) (bool, error) {
 		return false, handler.ErrInvalidOrderId
 	}
 	userIdFromContext, err := handler.UserIdFromCtx(ctx)
-	created, owner, err := s.addOrdered.CreateOrder(ctx, userIdFromContext, orderId)
+	created, owner, err := s.Ordered.CreateOrder(ctx, userIdFromContext, orderId)
 	if err != nil {
 		return false, wrapError(err)
 	}
@@ -65,3 +66,37 @@ func validateLuna(number string) bool {
 	return sum%10 == 0
 }
 
+func (s *Service) Orders(ctx context.Context) ([]handler.Order, error) {
+	const msg = "service.Orders"
+	wrapError := func(err error) error { return fmt.Errorf("%s: %w", msg, err) }
+
+	userId, err := handler.UserIdFromCtx(ctx)
+	if err != nil {
+		return nil, wrapError(err)
+	}
+	orders, err := s.Ordered.GetOrders(ctx, int32(userId))
+	if errors.Is(err, ErrNoRow) {
+		return []handler.Order{}, nil
+	}
+	if err != nil {
+		return nil, wrapError(err)
+	}
+	respOrders := make([]handler.Order, 0, len(orders))
+	for _, o := range orders {
+		respOrders = append(respOrders, handler.Order{
+			Number:     o.Number,
+			Status:     o.OrderStatus,
+			Accrual:    AccrualToFloatPtr(o.Accrual),
+			UploadedAt: handler.RFC3339Time(o.UploadedAt),
+		})
+	}
+	return respOrders, nil
+}
+
+func AccrualToFloatPtr(accrual int32) *float64 {
+	if accrual == 0 {
+		return nil
+	}
+	f := float64(accrual) / 100
+	return &f
+}
