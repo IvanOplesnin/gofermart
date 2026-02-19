@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -59,4 +60,30 @@ type RFC3339Time time.Time
 
 func (t RFC3339Time) MarshalJSON() ([]byte, error) {
 	return json.Marshal(time.Time(t).Format(time.RFC3339))
+}
+
+func (t *RFC3339Time) UnmarshalJSON(data []byte) error {
+	// null
+	if bytes.Equal(data, []byte("null")) {
+		*t = RFC3339Time(time.Time{})
+		return nil
+	}
+
+	// строка
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	if s == "" {
+		*t = RFC3339Time(time.Time{})
+		return nil
+	}
+
+	tt, err := time.Parse(time.RFC3339, s)
+	if err != nil {
+		return err
+	}
+
+	*t = RFC3339Time(tt)
+	return nil
 }
