@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/IvanOplesnin/gofermart.git/internal/logger"
 	"github.com/IvanOplesnin/gofermart.git/internal/service/gophermart"
@@ -14,11 +15,17 @@ import (
 
 type Client struct {
 	baseURL string
+	timeOut time.Duration
 }
 
-func New(baseURL string) *Client {
+func New(baseURL string, timeOut *time.Duration) *Client {
+	t := (time.Second * 20) 
+	if timeOut == nil {
+		timeOut = &t
+	} 
 	return &Client{
 		baseURL: baseURL,
+		timeOut: *timeOut,
 	}
 }
 
@@ -34,7 +41,10 @@ func (c *Client) GetOrder(ctx context.Context, number string) (response *gopherm
 		"PROCESSED":  "PROCESSED",
 	}
 
-	request, err := http.NewRequestWithContext(ctx, http.MethodGet, uri, nil)
+	ctxTimeout, cancel := context.WithTimeout(ctx, c.timeOut)
+	defer cancel()
+
+	request, err := http.NewRequestWithContext(ctxTimeout, http.MethodGet, uri, nil)
 	if err != nil {
 		return nil, fmt.Errorf("acrualClient.GetOrder: %w", err)
 	}

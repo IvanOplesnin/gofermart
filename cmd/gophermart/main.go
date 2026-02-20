@@ -35,7 +35,7 @@ func main() {
 	}
 	repo := psql.NewRepo(db)
 	hasher := hasher.NewSHA256()
-	accrualClient := accrualclient.New(cfg.AccrualServiceAddress)
+	accrualClient := accrualclient.New(cfg.AccrualServiceAddress, nil)
 
 	svc, err := gophermart.New(cfg, gophermart.ServiceDeps{
 		Hasher:        hasher,
